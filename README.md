@@ -2,7 +2,7 @@
 
 **Проверка сказала «сошлось». Данные были неверные.**
 
-📄 [Читать кейс](https://vreklameblogers-max.github.io/sales-intelligence-case/) ·
+📄 [Читать кейс](https://mihai1k.github.io/sales-intelligence-case/) ·
 [Как опубликовать](DEPLOY.md)
 
 ---

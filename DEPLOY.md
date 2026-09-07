@@ -11,7 +11,7 @@ git init
 git add .
 git commit -m "Инженерный кейс: сверка данных как контрольный гейт"
 git branch -M main
-git remote add origin git@github.com:vreklameblogers-max/sales-intelligence-case.git
+git remote add origin git@github.com:Mihai1K/sales-intelligence-case.git
 git push -u origin main
 ```
 
@@ -19,7 +19,7 @@ git push -u origin main
 ветка `main`, папка **`/ (root)`**.
 
 Через минуту страница будет на
-`https://vreklameblogers-max.github.io/sales-intelligence-case/`.
+`https://mihai1k.github.io/sales-intelligence-case/`.
 
 Файл `.nojekyll` уже добавлен — без него Jekyll игнорирует файлы,
 начинающиеся с подчёркивания.
