@@ -1,0 +1,842 @@
+<title>Reconciliation Gate</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:wght@500;600&display=swap">
+
+<style>
+  :root {
+    --paper:      #F7F8FA;
+    --surface:    #FFFFFF;
+    --sunken:     #EDEFF3;
+    --ink:        #12161A;
+    --ink-soft:   #495663;
+    --ink-faint:  #7A8794;
+    --rule:       #DCE1E8;
+    --rule-soft:  #E8EBF0;
+    --accent:     #2F6E8F;
+    --accent-ink: #235570;
+    --ok:         #2E7D5B;
+    --bad:        #B0413E;
+    --warn:       #96702A;
+
+    --measure: 68ch;
+    --step--1: 0.813rem;
+    --step-0:  1rem;
+    --step-1:  1.22rem;
+    --step-2:  1.55rem;
+    --step-3:  2.05rem;
+    --step-4:  2.9rem;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper:      #0E1116;
+      --surface:    #151A21;
+      --sunken:     #1B222B;
+      --ink:        #E4E9EF;
+      --ink-soft:   #A3B0BE;
+      --ink-faint:  #6E7C8A;
+      --rule:       #262F3A;
+      --rule-soft:  #1E262F;
+      --accent:     #6FAECD;
+      --accent-ink: #9AC9E0;
+      --ok:         #5CB88C;
+      --bad:        #E0796F;
+      --warn:       #D2A85A;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --paper:      #0E1116;
+    --surface:    #151A21;
+    --sunken:     #1B222B;
+    --ink:        #E4E9EF;
+    --ink-soft:   #A3B0BE;
+    --ink-faint:  #6E7C8A;
+    --rule:       #262F3A;
+    --rule-soft:  #1E262F;
+    --accent:     #6FAECD;
+    --accent-ink: #9AC9E0;
+    --ok:         #5CB88C;
+    --bad:        #E0796F;
+    --warn:       #D2A85A;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: "IBM Plex Sans", system-ui, -apple-system, sans-serif;
+    font-size: var(--step-0);
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap {
+    max-width: 78ch;
+    margin: 0 auto;
+    padding: 0 1.5rem 6rem;
+  }
+
+  /* ── Шапка ──────────────────────────────────────────────── */
+
+  header {
+    padding: 5rem 0 3rem;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .eyebrow {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: var(--step--1);
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0 0 1.25rem;
+  }
+
+  h1 {
+    font-family: "IBM Plex Serif", Georgia, serif;
+    font-weight: 600;
+    font-size: var(--step-4);
+    line-height: 1.12;
+    letter-spacing: -0.015em;
+    text-wrap: balance;
+    margin: 0 0 1.25rem;
+  }
+
+  .lede {
+    font-size: var(--step-1);
+    line-height: 1.55;
+    color: var(--ink-soft);
+    max-width: var(--measure);
+    margin: 0 0 2rem;
+  }
+
+  .chips { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+
+  .chip {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: var(--step--1);
+    color: var(--ink-soft);
+    background: var(--sunken);
+    border: 1px solid var(--rule-soft);
+    border-radius: 3px;
+    padding: 0.2rem 0.55rem;
+  }
+
+  /* ── Секции ─────────────────────────────────────────────── */
+
+  section { padding-top: 3.5rem; }
+
+  .sec-head {
+    display: flex;
+    align-items: baseline;
+    gap: 0.9rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .sec-num {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: var(--step--1);
+    font-weight: 500;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    border-radius: 2px;
+    padding: 0.05rem 0.4rem;
+    flex: none;
+  }
+
+  h2 {
+    font-family: "IBM Plex Serif", Georgia, serif;
+    font-weight: 600;
+    font-size: var(--step-3);
+    line-height: 1.2;
+    letter-spacing: -0.012em;
+    text-wrap: balance;
+    margin: 0;
+  }
+
+  h3 {
+    font-family: "IBM Plex Sans", system-ui, sans-serif;
+    font-weight: 600;
+    font-size: var(--step-1);
+    line-height: 1.3;
+    text-wrap: balance;
+    margin: 2.25rem 0 0.75rem;
+  }
+
+  p, ul, ol { max-width: var(--measure); }
+  p { margin: 0 0 1.1rem; }
+  ul, ol { margin: 0 0 1.1rem; padding-left: 1.25rem; }
+  li { margin-bottom: 0.4rem; }
+  li::marker { color: var(--ink-faint); }
+
+  strong { font-weight: 600; }
+  em { font-style: normal; color: var(--accent); }
+
+  code {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 0.88em;
+    background: var(--sunken);
+    border-radius: 3px;
+    padding: 0.1em 0.35em;
+  }
+
+  /* ── Вывод команд ───────────────────────────────────────── */
+
+  .term {
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    margin: 1.5rem 0;
+    overflow: hidden;
+  }
+
+  .term-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    background: var(--sunken);
+    border-bottom: 1px solid var(--rule-soft);
+    padding: 0.5rem 0.9rem;
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: var(--step--1);
+    color: var(--ink-faint);
+  }
+
+  .term-bar b { font-weight: 500; color: var(--ink-soft); }
+
+  .term pre {
+    margin: 0;
+    padding: 1rem 0.9rem;
+    overflow-x: auto;
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: var(--step--1);
+    line-height: 1.7;
+    font-variant-numeric: tabular-nums;
+    color: var(--ink-soft);
+  }
+
+  .ok  { color: var(--ok);  font-weight: 500; }
+  .bad { color: var(--bad); font-weight: 500; }
+  .dim { color: var(--ink-faint); }
+
+  pre.code {
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-left: 2px solid var(--accent);
+    border-radius: 4px;
+    margin: 1.5rem 0;
+    padding: 1rem 0.9rem;
+    overflow-x: auto;
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: var(--step--1);
+    line-height: 1.7;
+    color: var(--ink-soft);
+  }
+
+  /* ── Измерения ──────────────────────────────────────────── */
+
+  .measures {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 1px;
+    background: var(--rule);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    margin: 1.75rem 0;
+    overflow: hidden;
+  }
+
+  .measure {
+    background: var(--surface);
+    padding: 1rem 1.1rem;
+  }
+
+  .measure-v {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: var(--step-2);
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.1;
+    display: block;
+    margin-bottom: 0.3rem;
+  }
+
+  .measure-l {
+    font-size: var(--step--1);
+    color: var(--ink-faint);
+    line-height: 1.4;
+    display: block;
+  }
+
+  /* ── Врезка ─────────────────────────────────────────────── */
+
+  .note {
+    border-left: 2px solid var(--rule);
+    padding: 0.15rem 0 0.15rem 1.15rem;
+    margin: 1.75rem 0;
+    max-width: var(--measure);
+    color: var(--ink-soft);
+  }
+
+  .note.flag { border-left-color: var(--warn); }
+  .note p:last-child { margin-bottom: 0; }
+
+  .note-t {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: var(--step--1);
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--warn);
+    display: block;
+    margin-bottom: 0.45rem;
+  }
+
+  /* ── Таблицы ────────────────────────────────────────────── */
+
+  .tbl-wrap { overflow-x: auto; margin: 1.5rem 0; }
+
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    font-size: var(--step--1);
+  }
+
+  th, td {
+    text-align: left;
+    padding: 0.55rem 0.85rem 0.55rem 0;
+    border-bottom: 1px solid var(--rule-soft);
+    vertical-align: top;
+  }
+
+  th {
+    font-weight: 600;
+    color: var(--ink-faint);
+    font-size: var(--step--1);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    border-bottom-color: var(--rule);
+    white-space: nowrap;
+  }
+
+  td:first-child { color: var(--ink); font-weight: 500; }
+
+  /* ── Мини-кейсы ─────────────────────────────────────────── */
+
+  .cases { display: grid; gap: 1px; background: var(--rule);
+           border: 1px solid var(--rule); border-radius: 4px;
+           margin: 1.75rem 0; overflow: hidden; }
+
+  .case { background: var(--surface); padding: 1.5rem 1.4rem; }
+  .case h3 { margin-top: 0; }
+  .case p:last-child { margin-bottom: 0; }
+
+  /* ── Подвал ─────────────────────────────────────────────── */
+
+  footer {
+    margin-top: 4.5rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--rule);
+    color: var(--ink-faint);
+    font-size: var(--step--1);
+  }
+
+  a { color: var(--accent-ink); text-decoration-thickness: 1px;
+      text-underline-offset: 2px; }
+  a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px;
+                    border-radius: 2px; }
+
+  @media (max-width: 640px) {
+    :root { --step-4: 2.1rem; --step-3: 1.65rem; }
+    header { padding-top: 3rem; }
+    .wrap { padding: 0 1.1rem 4rem; }
+  }
+</style>
+
+<div class="wrap">
+
+<header>
+  <p class="eyebrow">Инженерный кейс · Python · PostgreSQL</p>
+  <h1>Проверка сказала «сошлось». Данные были неверные.</h1>
+  <p class="lede">
+    Конвейер переносил данные CRM в аналитическое хранилище. Перед приёмкой
+    выгрузки запускалась команда проверки. На наборе, где у пяти сделок сумма
+    была завышена в десять раз, она возвращала код&nbsp;0.
+  </p>
+  <div class="chips">
+    <span class="chip">Python 3.12</span>
+    <span class="chip">PostgreSQL 16</span>
+    <span class="chip">FastAPI</span>
+    <span class="chip">pytest · 257</span>
+    <span class="chip">Docker</span>
+    <span class="chip">n8n</span>
+  </div>
+</header>
+
+<div class="term" style="margin-top:2.5rem">
+  <div class="term-bar">
+    <b>./scripts/run.sh check</b>
+    <span>намеренно повреждённый набор</span>
+  </div>
+<pre>источник  сущность          raw   core  расхождение
+demo      contacts           31     31  <span class="ok">ок</span>
+demo      leads              45     45  <span class="ok">ок</span>
+demo      users               5      5  <span class="ok">ок</span>
+
+<span class="dim">код возврата:</span> <span class="ok">0</span>
+
+<span class="dim">фактически в наборе:</span>
+<span class="bad">5</span> сделок с суммой, завышенной в 10 раз
+<span class="bad">3</span> сделки с подменённым ответственным
+<span class="bad">4</span> сделки на неверном этапе</pre>
+</div>
+
+<section>
+  <div class="sec-head"><span class="sec-num">01</span><h2>Проблема</h2></div>
+
+  <p>
+    Данные проходят путь <code>API → raw (jsonb) → нормализация → core →
+    метрики → отчёт</code>. На выходе — цифры, по которым руководитель отдела
+    продаж принимает кадровые решения: чья выручка, кто не довёл сделку, где
+    потеряны деньги.
+  </p>
+  <p>
+    Перед приёмкой запускалась команда <code>check</code>. Она отвечала на
+    вопрос «всё ли на месте» и возвращала нулевой код при успехе.
+  </p>
+  <p>
+    <strong>«Всё на месте» и «всё правильно» — разные утверждения</strong>, а
+    команда проверяла только первое.
+  </p>
+  <p>
+    Цена ошибки здесь выше обычной: неверно разобранная запись не выглядит
+    сломанной. Она остаётся в отчёте, выглядит достоверно и обнаруживается
+    через недели — когда кто-то заметит, что цифра не сходится с ощущением.
+  </p>
+</section>
+
+<section>
+  <div class="sec-head"><span class="sec-num">02</span><h2>Причина</h2></div>
+
+  <p>Проверка сравнивала количество строк:</p>
+
+<pre class="code">core_counts = {
+    "leads":    "SELECT count(*) FROM core.deals",
+    "contacts": "SELECT count(*) FROM core.contacts",
+}
+diff = raw_count - core_count
+ok = diff == 0</pre>
+
+  <p>Отсюда три независимых дефекта.</p>
+
+  <h3>Значения полей не проверялись</h3>
+  <p>
+    Запись с неверной суммой, неверным этапом или неверным ответственным для
+    такой проверки неотличима от корректной: она есть, и её посчитали.
+  </p>
+
+  <h3>Запросы к <code>core</code> не фильтровались по источнику</h3>
+  <p>
+    <code>SELECT count(*) FROM core.deals</code> считает все сделки, включая
+    демонстрационные. Смешение источников делало сравнение бессмысленным ещё
+    до того, как дело доходило до значений.
+  </p>
+
+  <h3>Изоляция демо-данных была неполной</h3>
+  <p>
+    Флаг <code>is_demo</code> стоял на сделках и пользователях, но не на
+    компаниях, контактах и задачах. Активности записывались с жёстко заданным
+    источником независимо от происхождения:
+  </p>
+
+<pre class="code">INSERT INTO core.activities (source, ...) VALUES (<span class="bad">'amocrm'</span>, ...)</pre>
+
+  <p>
+    То есть демонстрационная переписка была неотличима от боевой прямо в ленте
+    коммуникаций.
+  </p>
+
+  <h3>Как обнаружено</h3>
+  <p>
+    Воспроизведением, а не чтением кода. Взял корректно загруженный набор и
+    внёс семь классов повреждений, <strong>не меняя количества записей</strong>:
+    завысил суммы, подменил ответственных и этапы, сбросил признак выигрыша,
+    удалил две записи, добавил одну без источника, стёр телефон контакта.
+    Вывод — в блоке в начале страницы.
+  </p>
+</section>
+
+<section>
+  <div class="sec-head"><span class="sec-num">03</span><h2>Решение</h2></div>
+
+  <h3>Трёхуровневая сверка</h3>
+  <p>
+    Модуль <code>reconcile</code> сравнивает <code>core</code> не с внешним
+    API, а с дословно сохранённым ответом источника в слое <code>raw</code>.
+    Это даёт возможность сверяться в любой момент, не создавая нагрузки на
+    чужую систему и не завися от того, что данные там уже изменились.
+  </p>
+
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr><th>Уровень</th><th>Что сравнивает</th><th>Что ловит</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>количества</td><td>массовую потерю при разборе</td></tr>
+      <tr><td>2</td><td>идентификаторы</td><td>какие записи потеряны, какие появились без источника</td></tr>
+      <tr><td>3</td><td>значения полей</td><td><strong>неверный разбор</strong> — 25 правил по шести сущностям</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <p>
+    Главный — третий. Первые два ловят потерю записей, третий — неверный
+    разбор, который опаснее: запись на месте, цифра неправильная, по
+    количествам это не видно.
+  </p>
+
+<pre class="code">self._compare(rep, raw, core, {
+    "amount":             lambda i: float(i.get("price") or 0),
+    "stage_amo_id":       lambda i: str(i.get("status_id")),
+    "responsible_amo_id": lambda i: str(i.get("responsible_user_id")),
+    "is_won":             lambda i: int(i.get("status_id") or 0) == STATUS_WON,
+    "next_contact_at":    lambda i: _ts(i.get("closest_task_at")),
+})</pre>
+
+  <h3>Сравнение с поправкой на типы</h3>
+  <p>
+    Наивное сравнение дало бы расхождение на каждой строке: Postgres отдаёт
+    <code>Decimal</code>, источник — <code>float</code>; время приходит в
+    разных часовых поясах.
+  </p>
+
+<pre class="code">def _differs(expected, actual):
+    if isinstance(expected, float) or isinstance(actual, float):
+        <span class="dim"># Допуск в копейку: иначе округление даёт ложные расхождения.</span>
+        return abs(float(expected) - float(actual)) &gt; 0.01
+    if isinstance(expected, datetime) and isinstance(actual, datetime):
+        <span class="dim"># Один и тот же момент в разных поясах — не расхождение.</span>
+        return abs((expected - actual).total_seconds()) &gt; 1
+    return str(expected) != str(actual)</pre>
+
+  <h3>Старая команда удалена, а не исправлена</h3>
+  <p>
+    Две команды, отвечающие на один вопрос по-разному, гарантируют, что на
+    приёмке однажды запустят не ту. Все ссылки в документации и в скрипте
+    интеграционной проверки переведены на <code>reconcile</code>.
+  </p>
+
+  <h3>Изоляция источников</h3>
+  <p>
+    Миграция добавила <code>is_demo</code> на все сущности, нормализатор стал
+    принимать источник параметром. Проверка результата: полный путь проходит
+    начисто <strong>при живущих рядом демонстрационных данных</strong> — то
+    есть ровно в той ситуации, что возникнет при подключении реальной CRM к
+    системе, где уже есть демо.
+  </p>
+</section>
+
+<section>
+  <div class="sec-head"><span class="sec-num">04</span><h2>Проверка</h2></div>
+
+  <p>Тот же повреждённый набор:</p>
+
+  <div class="term">
+    <div class="term-bar">
+      <b>./scripts/run.sh reconcile --source demo</b>
+      <span>тот же набор</span>
+    </div>
+<pre><span class="ok">✓</span> users        source=5    core=5    missing=0  extra=0  mismatch=0   <span class="ok">OK</span>
+<span class="ok">✓</span> companies    source=20   core=20   missing=0  extra=0  mismatch=0   <span class="ok">OK</span>
+<span class="bad">✗</span> contacts     source=31   core=31   missing=0  extra=0  mismatch=1   <span class="bad">MISMATCH</span>
+    #80001 phone_e164: источник=+7965…4317 core=None
+<span class="bad">✗</span> deals        source=45   core=44   missing=2  extra=1  mismatch=16  <span class="bad">MISMATCH</span>
+    #90001 amount:       источник=45000.0 core=450000.00
+    #90011 stage_amo_id: источник=143     core=40001
+    #90013 is_won:       источник=True    core=False
+    потеряно при разборе: #90021
+<span class="bad">✗</span> activities   source=163  core=157  missing=6  extra=0  mismatch=0   <span class="bad">MISMATCH</span>
+
+ИТОГ: расхождений 26 — выгрузку принимать нельзя
+<span class="dim">код возврата:</span> <span class="bad">1</span></pre>
+  </div>
+
+  <p>
+    Все семь классов повреждений обнаружены, каждый с указанием конкретной
+    записи и поля. Отчёт выгружается в JSON для автоматической обработки.
+  </p>
+
+  <h3>Формулировка теста фиксирует суть</h3>
+
+<pre class="code">async def test_wrong_amount_is_detected(loaded):
+    await loaded.execute("UPDATE core.deals SET amount = amount * 10 ...")
+    deals = _by_entity(await Reconciler(loaded, SOURCE).run())["deals"]
+
+    <span class="dim"># Количества сходятся — проверка количеств здесь бессильна.</span>
+    assert deals.source_count == deals.core_count
+    assert len([m for m in deals.field_mismatches
+                if m["field"] == "amount"]) == 5</pre>
+
+  <p>
+    Утверждение <code>source_count == core_count</code> стоит в тесте
+    намеренно: оно фиксирует, зачем нужен третий уровень.
+  </p>
+
+  <h3>Механизм контроля сам под контролем</h3>
+  <p>
+    <code>make integration-check</code> прогоняет двенадцать проверок реальными
+    командами. Одна из них проходит, только если сверка
+    <strong>завершилась с ошибкой</strong> на испорченных данных:
+  </p>
+
+<pre class="code">step "сверка ловит испорченные данные"
+psql -c "UPDATE core.deals SET amount = amount * 10 WHERE ..."
+./scripts/run.sh reconcile --source demo &amp;&amp; fail || ok</pre>
+</section>
+
+<section>
+  <div class="sec-head"><span class="sec-num">05</span><h2>Побочный результат</h2></div>
+
+  <p>
+    Усиленная сверка нашла дефект в собственном коде — и затем регрессию,
+    внесённую его исправлением.
+  </p>
+  <p>
+    После расширения сверки на связи активностей она показала расхождение на
+    всех 163 записях: <code>contact_id</code> в <code>core</code> пуст,
+    источник при этом контакт называет. Лента клиента возвращала пустой список
+    для любых данных из CRM — <strong>при проходящих тестах</strong>, потому
+    что в тестах связь проставлялась вручную.
+  </p>
+  <p>
+    Исправление изменило <code>INSERT ... VALUES</code> на
+    <code>INSERT ... SELECT FROM core.deals</code>. Подзапрос при отсутствии
+    сделки возвращал <code>NULL</code> и строка вставлялась; <code>SELECT</code>
+    при отсутствии сделки возвращает ноль строк и не вставляется ничего.
+  </p>
+
+  <div class="term">
+    <div class="term-bar"><b>ревизия правки на фикстуре</b><span>5 сценариев</span></div>
+<pre>примечаний на входе: 5   нормализатор отчитался: <span class="bad">5</span>
+фактически в core:   <span class="bad">4</span>
+
+сделка + контакт + компания       → contact=8001  company=7001  <span class="ok">✓</span>
+сделка без контакта, с компанией  → contact=None  company=7001  <span class="ok">✓</span>
+сделка с ДВУМЯ контактами         → contact=8001  <span class="bad">← выбран произвольно</span>
+сделка без контакта и компании    → contact=None  company=None  <span class="ok">✓</span>
+сделки не существует              → <span class="bad">ЗАПИСЬ ПОТЕРЯНА</span></pre>
+  </div>
+
+  <p>Счётчик отчитывался об успехе при молчаливой потере данных.</p>
+
+  <div class="note flag">
+    <span class="note-t">Два практических вывода</span>
+    <p>
+      257 проходящих тестов не поймали ни пустую ленту, ни регрессию: тесты
+      проверяли то, что я в них заложил, а не соответствие данных источнику.
+    </p>
+    <p>
+      Обе ошибки нашёл именно механизм сверки, ради которого всё и делалось.
+    </p>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head"><span class="sec-num">06</span><h2>Стек</h2></div>
+
+  <div class="measures">
+    <div class="measure"><span class="measure-v">257</span><span class="measure-l">тестов, из них интеграционные — против настоящего Postgres</span></div>
+    <div class="measure"><span class="measure-v">8 900</span><span class="measure-l">строк кода, 65 модулей</span></div>
+    <div class="measure"><span class="measure-v">3 500</span><span class="measure-l">строк тестов</span></div>
+    <div class="measure"><span class="measure-v">22</span><span class="measure-l">таблицы в двухслойной схеме, 6 миграций</span></div>
+  </div>
+
+  <div class="tbl-wrap">
+  <table>
+    <tbody>
+      <tr><td>Язык</td><td>Python 3.12, async</td></tr>
+      <tr><td>Хранилище</td><td>PostgreSQL 16 — слой <code>raw</code> (jsonb) и слой <code>core</code></td></tr>
+      <tr><td>HTTP</td><td>httpx, FastAPI</td></tr>
+      <tr><td>Тесты</td><td>pytest, respx</td></tr>
+      <tr><td>Качество</td><td>ruff, mypy</td></tr>
+      <tr><td>Инфраструктура</td><td>Docker Compose</td></tr>
+      <tr><td>Оркестрация</td><td>n8n — только расписание и транспорт, 9 воркфлоу</td></tr>
+      <tr><td>Отчёты</td><td>openpyxl</td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head"><span class="sec-num">07</span><h2>Другие решения</h2></div>
+
+  <div class="cases">
+    <div class="case">
+      <h3>Разделение сторон разговора без машинного обучения</h3>
+      <p>
+        Задача: в записи звонка отличить реплики продавца от реплик клиента.
+        Штатное решение — модель диаризации, требующая GPU, весов и принятия
+        лицензионных условий.
+      </p>
+      <p>
+        Сначала проверил, не пишет ли телефония стороны в разные каналы.
+        Проверки на <code>channels == 2</code> недостаточно: многие записи —
+        моно, продублированное в две дорожки. Измерение вместо предположения:
+        разность каналов через <code>volumedetect</code>.
+      </p>
+      <div class="measures" style="margin:1.25rem 0">
+        <div class="measure"><span class="measure-v ok">−24.1 дБ</span><span class="measure-l">настоящее стерео — стороны разделимы точно</span></div>
+        <div class="measure"><span class="measure-v bad">−91.0 дБ</span><span class="measure-l">продублированное моно — разделить нельзя</span></div>
+      </div>
+      <p>
+        Роли каналов при этом <strong>не назначаются автоматически</strong>:
+        какая дорожка принадлежит продавцу, зависит от оборудования. До
+        подтверждения реальной схемой обе помечены <code>unknown</code> —
+        перепутанные роли меняют оценку продавца на противоположную.
+      </p>
+    </div>
+
+    <div class="case">
+      <h3>Источник тендерных данных: исследование вместо предположений</h3>
+      <p>
+        Страница закупки — JS-приложение, данных в HTML нет. Через инспекцию
+        сетевых запросов нашёл публичный REST. Что доступ действительно
+        публичный, а не унаследован от сессии браузера, подтверждается
+        соседним запросом, отвечающим <code>401</code> — авторизация работает
+        там, где она есть.
+      </p>
+      <p>
+        Инкрементальность — через <code>sitemap</code> с <code>lastmod</code>:
+        обход идёт с последнего файла и прекращается на первом полностью
+        устаревшем.
+      </p>
+      <p>
+        Измерение, изменившее модель отбора: на двенадцати свежих закупках
+        подряд стартовые цены опубликованы <strong>у одной</strong>. Фильтр по
+        бюджету применим к 8% потока. Поэтому закупка без цены не
+        отбрасывается, а получает отдельный класс <code>REVIEW</code>, а
+        объявленный бюджет и посчитанная оценка хранятся в разных полях —
+        чтобы оценка не выдавалась за факт.
+      </p>
+    </div>
+
+    <div class="case">
+      <h3>Вторая площадка: решение не писать код</h3>
+      <p>В <code>robots.txt</code>, блок <code>User-agent: *</code>:</p>
+<pre class="code">Disallow: *f_keyword=
+Disallow: *search=
+Disallow: /app/next/search-tender/</pre>
+      <p>
+        Ровно то, что требовалось автоматизировать, запрещено владельцем
+        площадки. Плюс библиотека снятия отпечатка браузера на страницах —
+        автоматический доступ отслеживается.
+      </p>
+      <p>
+        Адаптер не писал. Вместо него — документ с семью вопросами для запроса
+        официального доступа и описанием предпочтительных форматов интеграции.
+      </p>
+    </div>
+
+    <div class="case">
+      <h3>Защита от записи в чужую CRM</h3>
+      <p>
+        Ошибочная запись необратима: удалить полторы тысячи примечаний из
+        карточек задним числом нельзя. Три независимых уровня, снять нужно все
+        три:
+      </p>
+<pre class="code">def check_write_allowed(mode, method, path):
+    if method.upper() not in WRITE_METHODS:
+        return
+    if mode is AmoMode.READ:
+        raise AmoWriteBlocked(...)
+    if not settings.amo_write_enabled:
+        raise AmoWriteBlocked(...)</pre>
+      <p>
+        Проверка стоит в единственной точке выхода наружу, а не в местах
+        вызова: любой новый код упрётся в неё автоматически, даже если автор о
+        запрете не знал.
+      </p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head"><span class="sec-num">08</span><h2>Границы кейса</h2></div>
+
+  <p>Что здесь сделано не кодом и где не хватает глубины.</p>
+
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr><th>Компонент</th><th>Состояние</th></tr></thead>
+    <tbody>
+      <tr><td>Интеграция с CRM</td><td>Полный путь пройден на <code>respx</code>-моках, артефакты сохранены. Доступа к реальному аккаунту нет. Это mock-verified, не production-verified</td></tr>
+      <tr><td>Диаризация</td><td>Варианты сравнены по документации проектов. Замеров производительности на своём железе нет</td></tr>
+      <tr><td>Воркфлоу n8n</td><td>Сгенерированы, в production не запускались. Аудит нашёл 38 замечаний: нет <code>retryOnFail</code>, <code>onError</code>, <code>timeout</code></td></tr>
+      <tr><td>Развёртывание</td><td><code>docker-compose.prod.yml</code> валиден, но на сервере не разворачивался</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>Что сделало бы кейс сильнее</h3>
+  <ul>
+    <li>
+      <strong>Замер производительности диаризации</strong> на реальных
+      телефонных записях (8 кГц, сжатие) вместо сравнения по документации:
+      публикуемые метрики снимаются на чистой речи и к телефонии применимы
+      плохо.
+    </li>
+    <li>
+      <strong>Property-based тесты</strong> для нормализатора. Сейчас
+      проверяются сконструированные случаи; генератор входных данных нашёл бы
+      регрессию с потерей строк раньше, чем ревизия.
+    </li>
+    <li>
+      <strong>Нагрузочный прогон</strong> конвейера на объёме, сопоставимом с
+      реальным аккаунтом, — чтобы увидеть поведение под лимитом семи запросов
+      в секунду, а не предполагать его.
+    </li>
+    <li>
+      <strong>Мутационное тестирование сверки</strong>: внести дефекты в сам
+      <code>reconcile</code> и убедиться, что тесты падают. Сейчас проверено,
+      что сверка ловит порчу данных, но не проверено, что тесты поймают порчу
+      сверки.
+    </li>
+  </ul>
+</section>
+
+<section>
+  <div class="sec-head"><span class="sec-num">09</span><h2>Запуск</h2></div>
+
+  <p>
+    Система работоспособна без внешних доступов — на детерминированном
+    демонстрационном наборе, который проходит тот же конвейер, что и боевые
+    данные.
+  </p>
+
+<pre class="code">cp .env.example .env
+make build &amp;&amp; make up &amp;&amp; make migrate
+make demo-data
+make demo-report</pre>
+
+  <p>Проверки:</p>
+
+<pre class="code">make test               <span class="dim"># 257 тестов</span>
+make lint
+make integration-check  <span class="dim"># 12 проверок реальными командами</span>
+make security-check     <span class="dim"># 15 проверок значений по умолчанию</span></pre>
+</section>
+
+<footer>
+  <p>
+    Двухслойная схема <code>raw</code>&nbsp;/&nbsp;<code>core</code>: слой
+    <code>raw</code> хранит ответы источника дословно и никогда не удаляется —
+    при ошибке разбора <code>core</code> пересобирается без повторного
+    обращения к внешней системе.
+  </p>
+</footer>
+
+</div>
